@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <script data-main="js/fix-selector-test.js" src="js/require/require.js"></script>
+</head>
+<body>
+    <div></div>
+    <div id="some_id" class="some_class some_other_class">
+      <div>
+          <input id="checkbox1_id" type="checkbox" checked="checked" value="checkbox1" />
+          <input id="checkbox2_id" type="checkbox" value="checkbox1" />
+          <input id="checkbox3_id" type="checkbox" value="checkbox1" />
+      </div>
+      <select>
+          <option>A</option>
+          <option>b</option>
+          <option>c</option>
+          <option selected="selected">d</option>
+      </select>
+    </div>
+    <img id="some_other_id" class="some_class some_other_class"></img>
+    <input type="text">
+</body>
+</html>
