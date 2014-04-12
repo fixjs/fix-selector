@@ -1,13 +1,13 @@
 define(function () {
-  var $ = function (selector) {
+  var $x = function $x(selector) {
     var elements = [];
-    
-    $.xpathSelect("//" + $.convert2xpath(selector), elements);
+
+    $x.xpathSelect("//" + $x.convert2xpath(selector), elements);
 
     return elements;
   };
 
-  $.convert2xpath = function (selector) {
+  $x.convert2xpath = function (selector) {
       //not supported patterns:
       // :only-child, :not, :nth-child, :contains, $= for attributes, ...
 
@@ -74,18 +74,31 @@ define(function () {
       return selector;
   };
 
-  $.xpathSelect = function (query, elements) {
+  $x.xpathSelect = function (query, elements) {
 
       var iterator = document.evaluate(query, document.lastChild, null, XPathResult.ANY_TYPE, null);
 
-      var nodes = [];
-      var node;
+      var nodes = [],
+        node;
       while (node = iterator.iterateNext()) {
           elements.push(node);
       }
 
       return nodes;
   };
-  
-  return $;
+
+  //For older versions of IE
+  if(typeof window.console === "undefined") {
+    window.console = {
+        log: function() {
+
+        }
+    };
+  }
+
+  if( window.$x === undefined ){
+      window.$x = $x;
+  }
+
+  return $x;
 });

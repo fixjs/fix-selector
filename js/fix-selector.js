@@ -1,13 +1,15 @@
 define(function () {
-  var $ = function (selector) {
+  var $ = function $(selector) {
       var elements = [];
 
       //remove spaces around ","
       selector = selector.replace(/\s(,)\s/g, ",");
 
-      var selectors = selector.split(",");
+      var selectors = selector.split(","),
+        l = selectors.length,
+        i = 0;
 
-      for (var i = 0; i < selectors.length; i++) {
+      for ( ; i < l; i++) {
           var sel = selectors[i].trim();
           if (sel) {
               //remove spaces around ">", "+" and "~"
@@ -17,8 +19,9 @@ define(function () {
               var selarr = sel.split(/([\s|>|+|~])+/);
 
               var context = [];
-              var j = 0;
-              while (j < selarr.length) {
+              var j = 0,
+                len = selarr.length;
+              while (j < len) {
                   var s = selarr[j];
 
                   var firstLevel = false;
@@ -60,19 +63,23 @@ define(function () {
    *  Array contextNodes, String tagName ("div", "div,select,input"), Boolean firstLevel
   **/
   $.GEBTN = function (contextNodes, tagName, firstLevel) {
-      var result = [];
+      var result = [],
+        i = 0,
+        l = contextNodes.length;
       var filterf = function (child) {
           return (child.nodeType == 1 && tagName.search("," + child.tagName.toLowerCase() + ",") > -1);
       };
-      for(var i=0;i<contextNodes.length;i++){
+      for( ; i<l; i++ ){
           var node = contextNodes[i];
           if (firstLevel) {
               tagName = "," + tagName.toLowerCase() + ",";
               result = result.concat(Array.prototype.filter.call(node.childNodes, filterf));
           }
           else {
-              var tgarr = tagName.split(",");
-              for(var j=0;j<tgarr.length;j++){
+              var tgarr = tagName.split(","),
+                j = 0,
+                len = tgarr.length;
+              for( ; j<len; j++){
                   result = result.concat(Array.prototype.slice.call(node.getElementsByTagName(tgarr[j]), 0));
               }
           }
@@ -84,11 +91,13 @@ define(function () {
    *  Array contextNodes, String className, Boolean firstLevel
   **/
   $.GEBCN = function (contextNodes, className, firstLevel) {
-      var result = [];
+      var result = [],
+        i = 0,
+        l = contextNodes.length;
       var filterf = function (child) {
           return (child.nodeType == 1 && $.hasClass(child, className));
       };
-      for (var i = 0; i < contextNodes.length; i++) {
+      for ( ; i < l; i++ ) {
           var node = contextNodes[i];
           if (firstLevel) {
               result = result.concat(Array.prototype.filter.call(node.childNodes, filterf));
@@ -105,8 +114,10 @@ define(function () {
   **/
   $.getChecked = function (contextNodes, checked) {
       return contextNodes.filter(function (el) {
-          return ((el.tagName.toLowerCase() == "input" && (el.type=="checkbox" || el.type=="radio") && el.checked == checked) ||
-              (el.tagName.toLowerCase() == "option" && el.selected == checked));
+          return ((el.tagName.toLowerCase() == "input" &&
+            (el.type=="checkbox" || el.type=="radio") &&
+                el.checked == checked) ||
+            (el.tagName.toLowerCase() == "option" && el.selected == checked));
       });
   };
 
@@ -114,9 +125,15 @@ define(function () {
    *  Array contextNodes, Node el
   **/
   $.isInContext = function (contextNodes, el) {
-      for (var i = 0; i < contextNodes.length; i++) {
-          if (contextNodes[i] == document) return true;
-          if ($.isParentOf(contextNodes[i], el)) return true;
+      var i = 0,
+        l = contextNodes.length;
+      for ( ; i < l; i++) {
+          if ( contextNodes[i] === document ){
+              return true;
+          }
+          if ( $.isParentOf(contextNodes[i], el) ){
+              return true;
+          }
       }
       return false;
   };
@@ -125,9 +142,13 @@ define(function () {
    *  Array contextNodes, Node el
   **/
   $.isInFirstLevel = function (contextNodes, el) {
-      for (var i = 0; i < contextNodes.length; i++) {
+      var i = 0,
+        l = contextNodes.length;
+      for ( ; i < l; i++ ) {
           var node = contextNodes[i];
-          if (Array.prototype.indexOf.call(node,el) > -1) return true;
+          if (Array.prototype.indexOf.call(node,el) > -1){
+              return true;
+          }
       }
       return false;
   };
@@ -141,14 +162,19 @@ define(function () {
       //temporary solution for ":not(:checked)"
       rule = rule.replace(/:not\(:/g, ":not\(");
 
-      var arr = rule.split(/([.|:|#|\/[|\/]|])+/).filter(function (val, index) { return val.trim() !== ""; });
+      var arr = rule
+        .split(/([.|:|#|\/[|\/]|])+/)
+        .filter(function (val, index) {
+            return val.trim() !== "";
+        });
 
-      var k = 0;
-      var context = [];
-      
-      while (k < arr.length) {
+      var k = 0,
+        context = [],
+        l = arr.length;
+
+      while ( k < l ) {
           var o = arr[k];
-          
+
           if (o === "*") {
               console.log("star is not implemented yet!");
               break;
@@ -168,11 +194,17 @@ define(function () {
               else {
                   //first rule
                   var el = document.getElementById(idvalue);
-                  if (el && $.isInContext(contextNodes, el)) context.push(el);
+                  if (el && $.isInContext(contextNodes, el)){
+                      context.push(el);
+                  }
               }
 
-              if (context.length) k += 2;
-              else break;
+              if (context.length){
+                  k += 2;
+              }
+              else{
+                  break;
+              }
           }
           else if (o == ".") {
               var className = arr[k + 1];
@@ -190,8 +222,12 @@ define(function () {
                   context = $.GEBCN(contextNodes, className, firstLevel);
               }
 
-              if (context.length) k += 2;
-              else break;
+              if (context.length){
+                  k += 2;
+              }
+              else{
+                  break;
+              }
           }
           else if (o == ":") {
               var r = arr[k + 1];
@@ -208,20 +244,28 @@ define(function () {
               else {
                   console.log("not all Form selectors and Content Filters are implemented!");
               }
-              if (context.length) k += 2;
-              else break;
+              if (context.length){
+                  k += 2;
+              }
+              else{
+                  break;
+              }
           }
           else if (o == "[") {
               console.log("Attribute selectors are not implemented yet!");
 
-              if (context.length) k += 3;
-              else break;
+              if (context.length){
+                  k += 3;
+              }
+              else{
+                  break;
+              }
           }
           else {
               break;
           }
       }
-      
+
       return context;
   };
 
@@ -230,13 +274,20 @@ define(function () {
   **/
   $.hasClass = function (node, className) {
       className = " " + className + " ";
-      return (node.nodeType === 1 && (" " + node.className + " ").replace(/[\n\t\r]/g, " ").indexOf(className) > -1);
+      return (node.nodeType === 1 &&
+        ( " " + node.className + " " )
+            .replace(/[\n\t\r]/g, " ")
+            .indexOf(className) > -1 );
   };
 
   /**
    *  Node p (parentNode), Node l (childNode)
   **/
-  $.isParentOf = function (p, l) { while (l && (l = l.parentNode) != p); return !!l; };
+  $.isParentOf = function (p, l) {
+      //assign a new value to l in a condition clause is intentionally there
+      while (l && (l = l.parentNode) != p);
+      return !!l;
+  };
 
 
   /**
@@ -244,17 +295,20 @@ define(function () {
   **/
   if (!Array.prototype.filter) {
       Array.prototype.filter = function (fun /*, thisArg */) {
-          if (this === void 0 || this === null)
+          if ( this === void 0 || this === null ){
               throw new TypeError();
+          }
 
-          var t = Object(this);
-          var len = t.length >>> 0;
-          if (typeof fun != "function")
+          var t = Object(this),
+            len = t.length >>> 0;
+          if (typeof fun != "function"){
               throw new TypeError();
+          }
 
-          var res = [];
-          var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
-          for (var i = 0; i < len; i++) {
+          var res = [],
+            thisArg = arguments.length >= 2 ? arguments[1] : void 0,
+            i = 0;
+          for ( ; i < len; i++ ) {
               if (i in t) {
                   var val = t[i];
 
@@ -266,9 +320,9 @@ define(function () {
           return res;
       };
   }
-  if (!Array.prototype.indexOf) {
+  if ( !Array.prototype.indexOf ) {
       Array.prototype.indexOf = function (searchElement, fromIndex) {
-          if (this === undefined || this === null) {
+          if ( this === undefined || this === null ) {
               throw new TypeError('"this" is null or not defined');
           }
 
@@ -280,14 +334,14 @@ define(function () {
               fromIndex = 0;
           }
 
-          if (fromIndex < 0) {
+          if ( fromIndex < 0 ) {
               fromIndex += length;
-              if (fromIndex < 0) {
+              if ( fromIndex < 0 ) {
                   fromIndex = 0;
               }
           }
 
-          for (; fromIndex < length; fromIndex++) {
+          for ( ; fromIndex < length; fromIndex++ ) {
               if (this[fromIndex] === searchElement) {
                   return fromIndex;
               }
@@ -296,7 +350,7 @@ define(function () {
           return -1;
       };
   }
-  if (!String.prototype.trim) {
+  if ( !String.prototype.trim ) {
       /**
        * String.prototype.trim()
        * is added natively in JavaScript 1.8.1 / ECMAScript 5
@@ -312,6 +366,18 @@ define(function () {
           return this.replace(/^\s+|\s+$/g, '');
       };
   }
-  
+  //For older versions of IE
+  if( typeof window.console === "undefined" ) {
+    window.console = {
+        log: function() {
+
+        }
+    };
+  }
+
+  if( typeof window.$ === "undefined" ) {
+    window.$ = $;
+  }
+
   return $;
 });
