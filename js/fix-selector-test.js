@@ -1,4 +1,4 @@
-require(["fix-selector", "fix-xselector"], function ($, $x) {
+require(["fix-selector"], function ($) {
 
     var result = null,
         xresult = null;
@@ -12,7 +12,7 @@ require(["fix-selector", "fix-xselector"], function ($, $x) {
     result = $("#some_id>select>option:not(:checked)");
 
     //some of selector patterns which are supported with xpath solution
-    xresult = $x("*");
+    /*xresult = $x("*");
     xresult = $x("body>*");
     xresult = $x("body>div *");
     xresult = $x("body div");
@@ -20,6 +20,5 @@ require(["fix-selector", "fix-xselector"], function ($, $x) {
     xresult = $x("body .some_class");
     xresult = $x("div[class*=some]");
     xresult = $x("body > div + div");
-    xresult = $x("body>div ~ div");
-
+    xresult = $x("body>div ~ div");*/
 });
