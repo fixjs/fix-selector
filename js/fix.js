@@ -6,7 +6,7 @@
  * @version   0.1.3
  */
 
-(function (window, hAzzle, undefined) {
+(function (window, $, undefined) {
 
 if (window['Fix']) return;
 
@@ -37,16 +37,13 @@ var
     toString = ObjectProto.toString,
 
     filter = ArrayProto.filter,
-    trim = StringProto.trim,
-    trimLeft = StringProto.trimLeft,
-    trimRight = StringProto.trimRight,
 
     //RegExp
     trimLeftExp = /^\s+/,
     trimRightExp = /\s+$/,
     trimExp = /^\s+|\s+$/g,
 
-    xpathSupport = (hAzzle.isFunction(document.evaluate) && hAzzle.isFunction(XPathResult));
+    xpathSupport = (0 && hAzzle.isFunction(document.evaluate) && hAzzle.isFunction(XPathResult));
 
 if ('undefined' === typeof Fix) {
 	Fix = {};
@@ -82,17 +79,6 @@ if ( !filter ) {
       }
 
       return res;
-  };
-}
-if ( !trim ) {
-  trimLeft = StringProto.trimLeft = function () {
-      return this.replace(trimLeftExp, '');
-  };
-  trimRight = StringProto.trimRight = function () {
-      return this.replace(trimRightExp, '');
-  };
-  trim = StringProto.trim = function () {
-      return this.replace(trimExp, '');
   };
 }
 //For older versions of IE
@@ -186,28 +172,26 @@ if(xpathSupport){
 			$$.queries[cssSelector] = selector;
 			return selector;
 		},
-		runSelector: function(query, nodes) {
-			var node,
+		runSelector: function(query) {
+			var elements = [],
+				el,
 	        	iterator = document.evaluate(query, document.lastChild, null, XPathResult.ANY_TYPE, null);
 
 	        if(iterator.resultType==XPathResult.ORDERED_NODE_ITERATOR_TYPE ||
 	          iterator.resultType==XPathResult.UNORDERED_NODE_ITERATOR_TYPE){
-	          while (node = iterator.iterateNext()) {
-	              nodes[nodes.length] = node;
+	          while (el = iterator.iterateNext()) {
+	              elements.push(el);
 	          }
 	        }
 	        else{
 	        	console.log("Unknown selector pattern");
 	        }
+	        return elements;
 	    }
 	};
 }
 else{
-	var bcExp = /]:/g,
-    	notExp = /:not\(:/g,
-		ruleSplitExp = /([.|:|#|\/[|\/]|])+/,
-		lettersExp = /^[a-z]+[a-z0-9]+$/gi,
-		cache = {};
+	var cache = {};
 
 	$$ = {
 		//filters
@@ -215,7 +199,7 @@ else{
 
 	    hasClass: function (node, className) {
 	        return csp ?
-	                  node.classList.contains($.trim(className)) : node.nodeType === 1 && (" " + node.className + " ").replace(/[\t\r\n\f]/g, " ").indexOf($.trim(className)) >= 0;
+	                  node.classList.contains($$.trim(className)) : node.nodeType === 1 && (" " + node.className + " ").replace(/[\t\r\n\f]/g, " ").indexOf($$.trim(className)) >= 0;
 	    },
 
 	    isParentOf: function (p, l) {
@@ -244,7 +228,7 @@ else{
 	            if ( contextNodes[i] === document ){
 	                return true;
 	            }
-	            if ( $.isParentOf(contextNodes[i], el) ){
+	            if ( $$.isParentOf(contextNodes[i], el) ){
 	                return true;
 	            }
 	        }
@@ -256,7 +240,7 @@ else{
 	          l = contextNodes.length;
 	        for ( ; i < l; i++ ) {
 	            var node = contextNodes[i];
-	            if ($.indexOf(node,el) > -1){
+	            if ($$.indexOf(node,el) > -1){
 	                return true;
 	            }
 	        }
@@ -309,14 +293,14 @@ else{
 
 		processRule: function (rule, contextNodes, firstLevel) {
 
-			rule = rule.replace(bcExp, "] :");
+			rule = rule.replace(/]:/g, "] :");
 
 	        //temporary solution for ":not(:checked)"
-	        rule = rule.replace(notExp, ":not\(");
+	        rule = rule.replace(/:not\(:/g, ":not\(");
 
 	        var
 	        	arr = rule
-				.split(ruleSplitExp)
+				.split(/([.|:|#|\/[|\/]|])+/)
 				.filter(function (val, index) {
 					return val.trim() !== "";
 				}),
@@ -337,7 +321,7 @@ else{
                 else*/
             	//check if it is letter only
             	//TODO: fic lettersExp to check for star
-	            if (o === "*" || lettersExp.test(o)) {
+	            if (/^[a-z]+[a-z0-9]+$/gi.test(o)) {
 	                //first rule
 	                context = $$.GEBTN(contextNodes, o, firstLevel);
 	                if (context.length){
@@ -401,12 +385,12 @@ else{
 	            	//onext is checked or no(checked)
 	                if (onext == "checked") {
 	                    if (context.length) {
-	                        context = $.getChecked(context, true);
+	                        context = $$.getChecked(context, true);
 	                    }
 	                }
 	                else if (onext == "not(checked)") {
 	                    if (context.length) {
-	                        context = $.getChecked(context, false);
+	                        context = $$.getChecked(context, false);
 	                    }
 	                }
 	                else {
@@ -437,7 +421,8 @@ else{
 	        return context;
 	    },
 
-	    runSelector: function (selector, elements){
+	    runSelector: function (selector){
+	    	var elements = [];
 	    	//remove spaces around ","
 	        selector = selector.replace(/\s(,)\s/g, ",");
 
@@ -491,119 +476,34 @@ else{
 	                throw new Error("Invalid selector : " + selector);
 	            }
 	        }
+	        return elements;
 		}
 	};
 }
 
-$$.$ = function(){
-	var elements = [];
+$$.trimLeft = function (str) {
+  return str.replace(trimLeftExp, '');
+};
+$$.trimRight = function (str) {
+  return str.replace(trimRightExp, '');
+};
+$$.trim = function (str) {
+  return str.replace(trimExp, '');
+};
 
+$$.$ = function(selector){
+	
 	if(xpathSupport){
 		selector = $$.convert2xpath(selector);
 	}
 
-    $$.runSelector(selector, elements);
-
-    return elements;
+    return $$.runSelector(selector);
 };
 
 
 
-Fix.select = function(selector){
+window["$fx"] = Fix.select = function(selector){
 	return $$.$(selector);
 };
 
-
-/*
-These lines are some gists for testing some caching ideas:
-*/
-var all = document.getElementsByTagName("*"),
-	_all = [],
-	tncache = {};
-
-IOF = function (arr, elem, i) {
-    var iOff = (function (find, i /*opt*/ ) {
-        if (typeof i === 'undefined') i = 0;
-        if (i < 0) i += this.length;
-        if (i < 0) i = 0;
-        for (var n = this.length; i < n; i++)
-            if (i in this && this[i] === find) {
-                return i;
-            }
-        return -1;
-    });
-    return arr === null ? -1 : iOff.call(arr, elem, i);
-};
-
-isg = function(obj){
-	return (IOF( _all, obj ) != -1);
-};
-
-g = function(obj){
-	var ind;
-	//If we modify the object
-	/*if( obj.__FIXID__ ){
-		return obj.__FIXID__;
-	}*/
-	if( isg(obj) ){
-		return ind;
-	}
-	else{
-		var l = _all.length;
-		obj.__FIXID__ = l;
-		_all[_all.length] = obj;
-		return l;
-	}
-};
-
-o = function(objid){
-	if(_all.hasOwnProperty(objid)){
-		return _all[objid];
-	}
-};
-
-
-//I am trying to come up with an alternative for getElementById
-GBID = function(id){
-	var len = all.length,
-		i = 0;
-	for( ; i < len ; i++ ){
-		var nodeId;
-		if( nodeId = all[i].getAttribute("id") && nodeId === id ){
-			return node;
-		}
-	}
-	return null;
-};
-
-//This really slower
-var bodyAll = document.body.getElementsByTagName("*");
-	cachetg = {};
-GBTN = function(tn, context){
-	var i = 0,
-		len = bodyAll.length,
-		result=[];
-	if(cachetg[tn]){
-		return cachetg[tn];
-	}
-	while(i < len){
-		if( bodyAll[i].tagName.toLowerCase() === tn ){
-			result.push(bodyAll[i]);
-		}
-		i++;
-	}
-	cachetg[tn] = result;
-	return result;
-};
-GBTN2 = function(tn, context){
-	var i = 0,
-		len = bodyAll.length,
-		result=[];
-		if(cachetg[tn]){
-		return cachetg[tn];
-	}
-	return filter.call(bodyAll, function(node){ return (node.tagName.toLowerCase()=="option"); });
-};
-/********************************************************************/
-
-})(window);
+})(window, hAzzle);
