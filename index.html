@@ -2,7 +2,23 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <script data-main="js/fix-selector-test.js" src="js/require/require.js"></script>
+    <script src="js/hazzle.js"></script>
+    <script src="js/fix.js"></script>
+    <script type="text/javascript">
+      window.addEventListener("load", function(){
+
+        var result = null;
+
+        result = $fx("body div");
+        result = $fx("body>div");
+        result = $fx("body>.some_class");
+        result = $fx("#some_id input:checked");
+        result = $fx("#some_id input:not(:checked)");
+        result = $fx("#some_id option:checked");
+        result = $fx("#some_id>select>option:not(:checked)");
+
+      });
+    </script>
 </head>
 <body>
     <div></div>
