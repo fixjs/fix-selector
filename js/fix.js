@@ -38,11 +38,6 @@ var
 
     filter = ArrayProto.filter,
 
-    //RegExp
-    trimLeftExp = /^\s+/,
-    trimRightExp = /\s+$/,
-    trimExp = /^\s+|\s+$/g,
-
     xpathSupport = (0 && hAzzle.isFunction(document.evaluate) && hAzzle.isFunction(XPathResult));
 
 if ('undefined' === typeof Fix) {
@@ -316,14 +311,7 @@ else{
 	            var o = arr[k],
 	            	onext = arr[k + 1];
 
-	            /*
-	            if (o === "*") {
-	                console.log("star is not implemented yet!");
-	                break;
-	            }
-                else*/
-            	//check if it is letter only
-            	//TODO: fic lettersExp to check for star
+	            //check if it is star or letter only
 	            if (o === "*" || /^[a-z]+[a-z0-9]+$/gi.test(o)) {
 	                //first rule
 	                context = $$.GEBTN(contextNodes, o, firstLevel);
@@ -485,13 +473,13 @@ else{
 }
 
 $$.trimLeft = function (str) {
-  return str.replace(trimLeftExp, '');
+  return str.replace(/^\s+/, '');
 };
 $$.trimRight = function (str) {
-  return str.replace(trimRightExp, '');
+  return str.replace(/\s+$/, '');
 };
 $$.trim = function (str) {
-  return str.replace(trimExp, '');
+  return str.replace(/^\s+|\s+$/g, '');
 };
 
 $$.$ = function(selector){
