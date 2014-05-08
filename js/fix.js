@@ -12,7 +12,7 @@ if (window['Fix']) return;
 
 if (typeof(hAzzle) == "undefined"){
 	console.log("Please include hAzlle.JS in the page");
-  return;
+	return;
 }
 
 var
@@ -95,75 +95,78 @@ if(xpathSupport){
 	$$ = {
 		queries: {},
 	    //xpath RegExps
-	    xExps: [
-			//Attribute Equals Selector [name="value"](https://api.jquery.com/attribute-equals-selector/)
-		    [/\[([^\]~\$\*\^\|\!]+)(=[^\]]+)?\]/g, "[@$1$2]"],
+	    getXpathExps: function(){
+	    	return [
+				//Attribute Equals Selector [name="value"](https://api.jquery.com/attribute-equals-selector/)
+			    [/\[([^\]~\$\*\^\|\!]+)(=[^\]]+)?\]/g, "[@$1$2]"],
 
-		    //Multiple Selector (“selector1, selector2, selectorN”)(https://api.jquery.com/multiple-selector/)
-		    [/\s*,\s*/g, "|"],
+			    //Multiple Selector (“selector1, selector2, selectorN”)(https://api.jquery.com/multiple-selector/)
+			    [/\s*,\s*/g, "|"],
 
-		    //remove extra spaces for ~
-		    [/\s*(~)\s*/g, "$1"],
-		    //Next Siblings Selector (“prev ~ siblings”)(http://api.jquery.com/next-siblings-selector/)
-	        [/([a-zA-Z0-9_\-\*])~([a-zA-Z0-9_\-\*])/g, "$1/following-sibling::$2"],
+			    //remove extra spaces for ~
+			    [/\s*(~)\s*/g, "$1"],
+			    //Next Siblings Selector (“prev ~ siblings”)(http://api.jquery.com/next-siblings-selector/)
+		        [/([a-zA-Z0-9_\-\*])~([a-zA-Z0-9_\-\*])/g, "$1/following-sibling::$2"],
 
-	        //remove extra spaces for +
-	        [/\s*(\+)\s*/g, "$1"],
-	        //Next Adjacent Selector (“prev + next”)(http://api.jquery.com/next-adjacent-Selector/)
-	        [/([a-zA-Z0-9_\-\*])\+([a-zA-Z0-9_\-\*])/g, "$1/following-sibling::*[1]/self::$2"],
+		        //remove extra spaces for +
+		        [/\s*(\+)\s*/g, "$1"],
+		        //Next Adjacent Selector (“prev + next”)(http://api.jquery.com/next-adjacent-Selector/)
+		        [/([a-zA-Z0-9_\-\*])\+([a-zA-Z0-9_\-\*])/g, "$1/following-sibling::*[1]/self::$2"],
 
-	        //remove extra spaces for >
-	        [/\s*(>)\s*/g, "$1"],
-	        //Child Selector (“parent > child”)(http://api.jquery.com/child-selector/)
-	        [/([a-zA-Z0-9_\-\*])>([a-zA-Z0-9_\-\*])/g, "$1/$2"],
+		        //remove extra spaces for >
+		        [/\s*(>)\s*/g, "$1"],
+		        //Child Selector (“parent > child”)(http://api.jquery.com/child-selector/)
+		        [/([a-zA-Z0-9_\-\*])>([a-zA-Z0-9_\-\*])/g, "$1/$2"],
 
-	        //add single quotation for attribute values
-	        [(/\[([^=]+)=([^'|" + "\"" + @"][^\]]*)\]/g, "[$1='$2']")],
+		        //add single quotation for attribute values
+		        [(/\[([^=]+)=([^'|" + "\"" + @"][^\]]*)\]/g, "[$1='$2']")],
 
-	        //add xpath star search in all nodes
-	        [/(^|[^a-zA-Z0-9_\-\*])(#|\.)([a-zA-Z0-9_\-]+)/g, "$1*$2$3"],
-	        //add xpath // search in all dom levels
-	        [/([\>\+\|\~\,\s])([a-zA-Z\*]+)/, "$1//$2"],
-	        [/\s+\/\//, "//"],
+		        //add xpath star search in all nodes
+		        [/(^|[^a-zA-Z0-9_\-\*])(#|\.)([a-zA-Z0-9_\-]+)/g, "$1*$2$3"],
+		        //add xpath // search in all dom levels
+		        [/([\>\+\|\~\,\s])([a-zA-Z\*]+)/, "$1//$2"],
+		        [/\s+\/\//, "//"],
 
-	        // :first-child Selector(https://api.jquery.com/first-child-selector/)
-	        [/([a-zA-Z0-9_\-\*]+):first-child/g, "*[1]/self::$1"],
+		        // :first-child Selector(https://api.jquery.com/first-child-selector/)
+		        [/([a-zA-Z0-9_\-\*]+):first-child/g, "*[1]/self::$1"],
 
-	        // :last-child Selector(https://api.jquery.com/last-child-selector/)
-	        [/([a-zA-Z0-9_\-\*]+):last-child/g, "$1[not(following-sibling::*)]"],
+		        // :last-child Selector(https://api.jquery.com/last-child-selector/)
+		        [/([a-zA-Z0-9_\-\*]+):last-child/g, "$1[not(following-sibling::*)]"],
 
-	        // :empty Selector(http://api.jquery.com/empty-selector/)
-	        [/([a-zA-Z0-9_\-\*]+):empty/g, "$1[not(*) and not(normalize-space())]"],
+		        // :empty Selector(http://api.jquery.com/empty-selector/)
+		        [/([a-zA-Z0-9_\-\*]+):empty/g, "$1[not(*) and not(normalize-space())]"],
 
-	        // Attribute Not Equal Selector [name!="value"](http://api.jquery.com/attribute-not-equal-selector/)
-	        [/\[([a-zA-Z0-9_\-]+)\!=([^\]]+)\]/g, "[@$1!=$2 or not(@$1)]"],
+		        // Attribute Not Equal Selector [name!="value"](http://api.jquery.com/attribute-not-equal-selector/)
+		        [/\[([a-zA-Z0-9_\-]+)\!=([^\]]+)\]/g, "[@$1!=$2 or not(@$1)]"],
 
-	        //Attribute Starts With Selector [name^="value"](https://api.jquery.com/attribute-starts-with-selector/)
-	        [/\[([a-zA-Z0-9_\-]+)\^=([^\]]+)\]/g, "[starts-with(@$1,$2)]"],
+		        //Attribute Starts With Selector [name^="value"](https://api.jquery.com/attribute-starts-with-selector/)
+		        [/\[([a-zA-Z0-9_\-]+)\^=([^\]]+)\]/g, "[starts-with(@$1,$2)]"],
 
-	        //Attribute Contains Selector [name*="value"](http://api.jquery.com/attribute-contains-selector/)
-	        [/\[([a-zA-Z0-9_\-]+)\*=([^\]]+)\]/g, "[contains(@$1,$2)]"],
+		        //Attribute Contains Selector [name*="value"](http://api.jquery.com/attribute-contains-selector/)
+		        [/\[([a-zA-Z0-9_\-]+)\*=([^\]]+)\]/g, "[contains(@$1,$2)]"],
 
-	        //Attribute Contains Word Selector [name~="value"](http://api.jquery.com/attribute-contains-word-selector/)
-	        [/\[([a-zA-Z0-9_\-]+)~=([^\]]+)\]/g, "[contains(concat(' ',normalize-space(@$1),' '),concat(' ',$2,' '))]"],
+		        //Attribute Contains Word Selector [name~="value"](http://api.jquery.com/attribute-contains-word-selector/)
+		        [/\[([a-zA-Z0-9_\-]+)~=([^\]]+)\]/g, "[contains(concat(' ',normalize-space(@$1),' '),concat(' ',$2,' '))]"],
 
-	        //ID Selector (“#id”)(http://api.jquery.com/id-selector/)
-	        [/#([a-zA-Z0-9_\-]+)/g, "[@id='$1']"],
+		        //ID Selector (“#id”)(http://api.jquery.com/id-selector/)
+		        [/#([a-zA-Z0-9_\-]+)/g, "[@id='$1']"],
 
-	        //Class Selector (“.class”)(http://api.jquery.com/class-selector/)
-	        [/\.([a-zA-Z0-9_\-]+)/g, "[contains(concat(' ',normalize-space(@class),' '),' $1 ')]"],
+		        //Class Selector (“.class”)(http://api.jquery.com/class-selector/)
+		        [/\.([a-zA-Z0-9_\-]+)/g, "[contains(concat(' ',normalize-space(@class),' '),' $1 ')]"],
 
-	        //Multiple Attribute Selector [name="value"][name2="value2"](http://api.jquery.com/multiple-attribute-selector/)
-	        [/\]\[([^\]]+)/g, " and ($1)"]
-		],
+		        //Multiple Attribute Selector [name="value"][name2="value2"](http://api.jquery.com/multiple-attribute-selector/)
+		        [/\]\[([^\]]+)/g, " and ($1)"]
+			];
+		},
 		convert2xpath: function(selector) {
 			//prevent it from converting a previously convetred selector query
 			if($$.queries[cssSelector]){
 				return $$.queries[cssSelector];
 			}
+			var xExps = $$.getXpathExps();
 			var cssSelector = selector;
-			for (var i = $$.xExps.length - 1; i >= 0; i--) {
-				selector = replace.apply(selector, $$.xExps[i]);
+			for (var i = xExps.length - 1; i >= 0; i--) {
+				selector = replace.apply(selector, xExps[i]);
 			}
 			
 			//TODO: check if there is any better way instead of using double slash in xpath
