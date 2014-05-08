@@ -324,7 +324,7 @@ else{
                 else*/
             	//check if it is letter only
             	//TODO: fic lettersExp to check for star
-	            if (/^[a-z]+[a-z0-9]+$/gi.test(o)) {
+	            if (o === "*" || /^[a-z]+[a-z0-9]+$/gi.test(o)) {
 	                //first rule
 	                context = $$.GEBTN(contextNodes, o, firstLevel);
 	                if (context.length){
