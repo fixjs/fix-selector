@@ -12,7 +12,7 @@ if (window['Fix']) return;
 
 if (typeof(hAzzle) == "undefined"){
 	console.log("Please include hAzlle.JS in the page");
-	return;
+  return;
 }
 
 var
