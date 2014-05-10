@@ -4,31 +4,35 @@
 <head>
     <script src="js/hazzle.js"></script>
     <script src="js/fix.js"></script>
+    <script src='js/fix-xpath.js'></script>
     <script type="text/javascript">
       window.addEventListener("load", function(){
 
-        var result = null;
+        window.result = [];
+        window.xresult = [];
 
-        result = $fx("body *");
-        result = $fx("body div *");
-        result = $fx("body div");
-        result = $fx("body>div");
-        result = $fx("body>.some_class");
-        result = $fx("#some_id input:checked");
-        result = $fx("#some_id input:not(:checked)");
-        result = $fx("#some_id option:checked");
-        result = $fx("#some_id>select>option:not(:checked)");
+        result.push($f("#some_id"));
+        result.push($f(".some_class"));
+        result.push($f("body *"));
+        result.push($f("body div *"));
+        result.push($f("body div"));
+        result.push($f("body>div"));
+        result.push($f("body>.some_class"));
+        result.push($f("#some_id input:checked"));
+        result.push($f("#some_id input:not(:checked)"));
+        result.push($f("#some_id option:checked"));
+        result.push($f("#some_id>select>option:not(:checked)"));
 
-        /* xpath tests
-        xresult = $fx("*");
-        xresult = $fx("body>*");
-        xresult = $fx("body>div *");
-        xresult = $fx("body div");
-        xresult = $fx("body>div");
-        xresult = $fx("body .some_class");
-        xresult = $fx("div[class*=some]");
-        xresult = $fx("body > div + div");
-        xresult = $fx("body>div ~ div");*/
+        /* xpath tests */
+        xresult.push($fx("*"));
+        xresult.push($fx("body > *"));
+        xresult.push($fx("body>div *"));
+        xresult.push($fx("body div"));
+        xresult.push($fx("body>div"));
+        xresult.push($fx("body .some_class"));
+        xresult.push($fx("div[class*=some]"));
+        xresult.push($fx("body > div + div"));
+        xresult.push($fx("body>div ~ div"));
 
       });
     </script>
