@@ -6,51 +6,38 @@
  * @version   0.1.3
  */
 
-(function (window, $, undefined) {
+(function (window, undefined) {
 
-if (window['Fix']) return;
-
-if (typeof(hAzzle) == "undefined"){
-	console.log("Please include hAzlle.JS in the page");
-	return;
+var log;
+if('undefined' === typeof window){
+	log = function() {};
 }
-
-var
-
-	$$,
-	csp = !!document.createElement('p').classList,
-
-	/**
-	 * Prototype references.
-	 */
-    ArrayProto = Array.prototype,
-    StringProto = String.prototype,
-    ObjectProto = Object.prototype,
-
-    /**
-     * Create a reference to some core methods
-     */
-
-    slice = ArrayProto.slice,
-    concat = ArrayProto.concat,
-    replace = StringProto.replace,
-    toString = ObjectProto.toString,
-
-    filter = ArrayProto.filter,
-
-    xpathSupport = (0 && hAzzle.isFunction(document.evaluate) && hAzzle.isFunction(XPathResult));
-
-if ('undefined' === typeof Fix) {
-	Fix = {};
-
-	if ('undefined' !== typeof window) {
-		window.Fx = window.Fix = Fx = Fix;
+else{
+	if(typeof window.console === "undefined"){
+		window.console = {};
+		log = window.console.log = function() {};
+	}
+	else{
+		log = function(msg){
+			console.log(msg + " | " + new Date().valueOf());
+		}
 	}
 }
 
+if ('undefined' !== typeof window && window['Fix']){
+	log("You already have Fix framework added in the context");
+	return;
+}
+
+var Fix = {};
+
+if ('undefined' !== typeof window) {
+	window.Fix = Fix;
+}
+
 //polyfills
-if ( !filter ) {
-  filter = ArrayProto.filter = function (fun /*, thisArg */) {
+if ( !Array.prototype.filter ) {
+  ArrayProto.filter = function (fun /*, thisArg */) {
       if ( this === void 0 || this === null ){
           throw new TypeError();
       }
@@ -76,124 +63,68 @@ if ( !filter ) {
       return res;
   };
 }
-//For older versions of IE
-if( typeof window.console === "undefined" ) {
-	window.console = {
-	    log: function() {
 
-	    }
-	};
-}
+var
+	/**
+	 * Prototype references.
+	 */
+    ArrayProto = Array.prototype,
+    StringProto = String.prototype,
+    ObjectProto = Object.prototype,
 
-if(xpathSupport){
+    /**
+     * Create a reference to some core methods
+     */
+    slice = ArrayProto.slice,
+    concat = ArrayProto.concat,
+    replace = StringProto.replace,
+    toString = ObjectProto.toString,
+    filter = ArrayProto.filter,
 
-	$$ = {
-		queries: {},
-	    //xpath RegExps
-	    getXpathExps: function(){
-	    	return [
-				//Attribute Equals Selector [name="value"](https://api.jquery.com/attribute-equals-selector/)
-			    [/\[([^\]~\$\*\^\|\!]+)(=[^\]]+)?\]/g, "[@$1$2]"],
+    csp = !!document.createElement('p').classList,
+    cache = {},
 
-			    //Multiple Selector (“selector1, selector2, selectorN”)(https://api.jquery.com/multiple-selector/)
-			    [/\s*,\s*/g, "|"],
-
-			    //remove extra spaces for ~
-			    [/\s*(~)\s*/g, "$1"],
-			    //Next Siblings Selector (“prev ~ siblings”)(http://api.jquery.com/next-siblings-selector/)
-		        [/([a-zA-Z0-9_\-\*])~([a-zA-Z0-9_\-\*])/g, "$1/following-sibling::$2"],
-
-		        //remove extra spaces for +
-		        [/\s*(\+)\s*/g, "$1"],
-		        //Next Adjacent Selector (“prev + next”)(http://api.jquery.com/next-adjacent-Selector/)
-		        [/([a-zA-Z0-9_\-\*])\+([a-zA-Z0-9_\-\*])/g, "$1/following-sibling::*[1]/self::$2"],
-
-		        //remove extra spaces for >
-		        [/\s*(>)\s*/g, "$1"],
-		        //Child Selector (“parent > child”)(http://api.jquery.com/child-selector/)
-		        [/([a-zA-Z0-9_\-\*])>([a-zA-Z0-9_\-\*])/g, "$1/$2"],
-
-		        //add single quotation for attribute values
-		        [(/\[([^=]+)=([^'|" + "\"" + @"][^\]]*)\]/g, "[$1='$2']")],
-
-		        //add xpath star search in all nodes
-		        [/(^|[^a-zA-Z0-9_\-\*])(#|\.)([a-zA-Z0-9_\-]+)/g, "$1*$2$3"],
-		        //add xpath // search in all dom levels
-		        [/([\>\+\|\~\,\s])([a-zA-Z\*]+)/, "$1//$2"],
-		        [/\s+\/\//, "//"],
-
-		        // :first-child Selector(https://api.jquery.com/first-child-selector/)
-		        [/([a-zA-Z0-9_\-\*]+):first-child/g, "*[1]/self::$1"],
-
-		        // :last-child Selector(https://api.jquery.com/last-child-selector/)
-		        [/([a-zA-Z0-9_\-\*]+):last-child/g, "$1[not(following-sibling::*)]"],
-
-		        // :empty Selector(http://api.jquery.com/empty-selector/)
-		        [/([a-zA-Z0-9_\-\*]+):empty/g, "$1[not(*) and not(normalize-space())]"],
-
-		        // Attribute Not Equal Selector [name!="value"](http://api.jquery.com/attribute-not-equal-selector/)
-		        [/\[([a-zA-Z0-9_\-]+)\!=([^\]]+)\]/g, "[@$1!=$2 or not(@$1)]"],
-
-		        //Attribute Starts With Selector [name^="value"](https://api.jquery.com/attribute-starts-with-selector/)
-		        [/\[([a-zA-Z0-9_\-]+)\^=([^\]]+)\]/g, "[starts-with(@$1,$2)]"],
-
-		        //Attribute Contains Selector [name*="value"](http://api.jquery.com/attribute-contains-selector/)
-		        [/\[([a-zA-Z0-9_\-]+)\*=([^\]]+)\]/g, "[contains(@$1,$2)]"],
-
-		        //Attribute Contains Word Selector [name~="value"](http://api.jquery.com/attribute-contains-word-selector/)
-		        [/\[([a-zA-Z0-9_\-]+)~=([^\]]+)\]/g, "[contains(concat(' ',normalize-space(@$1),' '),concat(' ',$2,' '))]"],
-
-		        //ID Selector (“#id”)(http://api.jquery.com/id-selector/)
-		        [/#([a-zA-Z0-9_\-]+)/g, "[@id='$1']"],
-
-		        //Class Selector (“.class”)(http://api.jquery.com/class-selector/)
-		        [/\.([a-zA-Z0-9_\-]+)/g, "[contains(concat(' ',normalize-space(@class),' '),' $1 ')]"],
-
-		        //Multiple Attribute Selector [name="value"][name2="value2"](http://api.jquery.com/multiple-attribute-selector/)
-		        [/\]\[([^\]]+)/g, " and ($1)"]
-			];
-		},
-		convert2xpath: function(selector) {
-			//prevent it from converting a previously convetred selector query
-			if($$.queries[cssSelector]){
-				return $$.queries[cssSelector];
-			}
-			var xExps = $$.getXpathExps();
-			var cssSelector = selector;
-			for (var i = xExps.length - 1; i >= 0; i--) {
-				selector = replace.apply(selector, xExps[i]);
-			}
-			
-			//TODO: check if there is any better way instead of using double slash in xpath
-			selector = "//" + selector;
-
-			$$.queries[cssSelector] = selector;
-			return selector;
-		},
-		runSelector: function(query) {
-			var elements = [],
-				el,
-	        	iterator = document.evaluate(query, document.lastChild, null, XPathResult.ANY_TYPE, null);
-
-	        if(iterator.resultType==XPathResult.ORDERED_NODE_ITERATOR_TYPE ||
-	          iterator.resultType==XPathResult.UNORDERED_NODE_ITERATOR_TYPE){
-	          while (el = iterator.iterateNext()) {
-	              elements.push(el);
-	          }
-	        }
-	        else{
-	        	console.log("Unknown selector pattern");
-	        }
-	        return elements;
-	    }
-	};
-}
-else{
-	var cache = {};
-
-	$$ = {
+	  $$ = {
 		//filters
 		//_idfilter: function(){},
+		isString: function (value) {
+	        return typeof value === 'string';
+	    },
+	    isFunction: function (value) {
+	        return typeof value === 'function';
+	    },
+	    inArray: function (elem, arr, i) {
+
+	        var iOff = (function (find, i /*opt*/ ) {
+	            if (typeof i === 'undefined') i = 0;
+	            if (i < 0) i += this.length;
+	            if (i < 0) i = 0;
+	            for (var n = this.length; i < n; i++)
+	                if (i in this && this[i] === find) {
+	                    return i;
+	                }
+	            return -1;
+	        });
+	        return arr === null ? -1 : iOff.call(arr, elem, i);
+	    },
+
+	    trimLeft : function (str) {
+		  return str.replace(/^\s+/, '');
+		},
+		trimRight : function (str) {
+		  return str.replace(/\s+$/, '');
+		},
+		trim : function (str) {
+		  return str.replace(/^\s+|\s+$/g, '');
+		},
+
+		//borrowed from hAzzle
+		extend : function (o, target) {
+		    for (var k in o) {
+		        o.hasOwnProperty(k) && (target[k] = o[k]);
+		    }
+		    return target;
+		},
 
 	    hasClass: function (node, className) {
 	        return csp ?
@@ -201,16 +132,14 @@ else{
 	    },
 
 	    isParentOf: function (p, l) {
+	    	log("stack: isParentOf");
 	        //assign a new value to l in a condition clause is intentionally there
 	        while (l && (l = l.parentNode) != p);
 	        return !!l;
 	    },
 
-	    indexOf: function (array, obj, i) {
-	        return hAzzle.inArray.call(array, obj, i);
-	    },
-
 	    getChecked: function (contextNodes, checked) {
+	    	log("stack: getChecked");
 	        return contextNodes.filter(function (el) {
 	            return ((el.tagName.toLowerCase() == "input" &&
 	              (el.type=="checkbox" || el.type=="radio") &&
@@ -220,6 +149,7 @@ else{
 	    },
 
 	    isInContext: function (contextNodes, el) {
+	    	log("stack: isInContext");
 	        var i = 0,
 	          l = contextNodes.length;
 	        for ( ; i < l; i++) {
@@ -234,11 +164,12 @@ else{
 	    },
 
 	    isInFirstLevel: function (contextNodes, el) {
+	    	log("stack: isInFirstLevel");
 	        var i = 0,
 	          l = contextNodes.length;
 	        for ( ; i < l; i++ ) {
 	            var node = contextNodes[i];
-	            if ($$.indexOf(node,el) > -1){
+	            if ($$.inArray(el, node.childNodes) >= 0){
 	                return true;
 	            }
 	        }
@@ -246,6 +177,7 @@ else{
 	    },
 
 		GEBTN: function (contextNodes, tagName, firstLevel) {
+			log("stack: GEBTN start");
 	        var result = [],
 	          i = 0,
 	          l = contextNodes.length;
@@ -267,10 +199,12 @@ else{
 	                }
 	            }
 	        }
+	        log("stack: GEBTN end");
 	        return result;
 	    },
 
 	    GEBCN: function (contextNodes, className, firstLevel) {
+	    	log("stack: GEBTN start");
 	        var result = [],
 	          i = 0,
 	          l = contextNodes.length;
@@ -286,10 +220,12 @@ else{
 	                result = result.concat(slice.call(node.getElementsByClassName(className), 0));
 	            }
 	        }
+	        log("stack: GEBTN end");
 	        return result;
 	    },
 
 		processRule: function (rule, contextNodes, firstLevel) {
+			log("stack: processRule start");
 
 			rule = rule.replace(/]:/g, "] :");
 
@@ -385,7 +321,7 @@ else{
 	                    }
 	                }
 	                else {
-	                    console.log("not all Form selectors and Content Filters are implemented!");
+	                    log("not all Form selectors and Content Filters are implemented!");
 	                }
 	                if (context.length){
 	                    k += 2;
@@ -395,7 +331,7 @@ else{
 	                }
 	            }
 	            else if (o == "[") {
-	                console.log("Attribute selectors are not implemented yet!");
+	                log("Attribute selectors are not implemented yet!");
 
 	                if (context.length){
 	                    k += 3;
@@ -409,10 +345,14 @@ else{
 	            }
 	        }
 
+	        log("stack: processRule end");
+
 	        return context;
 	    },
 
 	    runSelector: function (selector){
+	    	log("stack: runSelector start");
+
 	    	var elements = [];
 	    	//remove spaces around ","
 	        selector = selector.replace(/\s(,)\s/g, ",");
@@ -446,10 +386,10 @@ else{
 	                            context = $$.processRule(s, context, firstLevel);
 	                        }
 	                        else if (op == "+") {
-	                            console.log("Next Adjacent Selector is not implemented yet!");
+	                            log("Next Adjacent Selector is not implemented yet!");
 	                        }
 	                        else if (op == "~") {
-	                            console.log("Next Siblings Selector is not implemented yet!");
+	                            log("Next Siblings Selector is not implemented yet!");
 	                        }
 	                    }
 	                    else context = $$.processRule(s, [document], false);
@@ -467,34 +407,18 @@ else{
 	                throw new Error("Invalid selector : " + selector);
 	            }
 	        }
+	        log("stack: runSelector end");
 	        return elements;
 		}
 	};
-}
 
-$$.trimLeft = function (str) {
-  return str.replace(/^\s+/, '');
-};
-$$.trimRight = function (str) {
-  return str.replace(/\s+$/, '');
-};
-$$.trim = function (str) {
-  return str.replace(/^\s+|\s+$/g, '');
+Fix.$$ = $$;
+
+window["$f"] = Fix.$ = function(selector){
+	log("stack: $f start");
+	result = $$.runSelector(selector);
+	log("stack: $f end");
+	return result;
 };
 
-$$.$ = function(selector){
-	
-	if(xpathSupport){
-		selector = $$.convert2xpath(selector);
-	}
-
-    return $$.runSelector(selector);
-};
-
-
-
-window["$fx"] = Fix.select = function(selector){
-	return $$.$(selector);
-};
-
-})(window, hAzzle);
+})(window);
