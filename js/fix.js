@@ -37,14 +37,17 @@
 
 //polyfills
 if ( !Array.prototype.filter ) {
-  ArrayProto.filter = function (fun /*, thisArg */) {
+  Array.prototype.filter = function (fun /*, thisArg */) {
       if ( this === void 0 || this === null ){
           throw new TypeError();
       }
 
       var t = Object(this),
-      len = t.length >>> 0;
-      if (typeof fun != 'function'){
+
+      //TODO: why >>> is used here
+      //len = t.length >>> 0;
+      len = t.length;
+      if (typeof fun !== 'function'){
           throw new TypeError();
       }
 
@@ -55,8 +58,9 @@ if ( !Array.prototype.filter ) {
           if (i in t) {
               var val = t[i];
 
-              if (fun.call(thisArg, val, i, t))
+              if (fun.call(thisArg, val, i, t)){
                   res[res.length] = val;
+              }
           }
       }
 
@@ -88,28 +92,35 @@ var
         },
         inArray: function (elem, arr, i) {
 
-            var iOff = (function (find, i /*opt*/ ) {
-                if (typeof i === 'undefined') i = 0;
-                if (i < 0) i += this.length;
-                if (i < 0) i = 0;
-                for (var n = this.length; i < n; i++)
+            var iOff = function (find, i /*opt*/ ) {
+                if (typeof i === 'undefined'){
+                    i = 0;
+                }
+                if (i < 0){
+                    i += this.length;
+                }
+                if (i < 0){
+                    i = 0;
+                }
+                for (var n = this.length; i < n; i++){
                     if (i in this && this[i] === find) {
                         return i;
                     }
                     return -1;
-                });
+                }
+            };
             return arr === null ? -1 : iOff.call(arr, elem, i);
         },
 
         trimLeft : function (str) {
           return str.replace(/^\s+/, '');
-      },
-      trimRight : function (str) {
+        },
+        trimRight : function (str) {
           return str.replace(/\s+$/, '');
-      },
-      trim : function (str) {
+        },
+        trim : function (str) {
           return str.replace(/^\s+|\s+$/g, '');
-      },
+        },
 
         //borrowed from hAzzle
         extend : function (o, target) {
@@ -127,19 +138,18 @@ var
         },
 
         isParentOf: function (p, l) {
-            log('stack: isParentOf');
             //assign a new value to l in a condition clause is intentionally there
-            while (l && (l = l.parentNode) != p);
+            while (l && (l = l.parentNode) !== p){}
             return !!l;
         },
 
         getChecked: function (contextNodes, checked) {
             log('stack: getChecked');
             return contextNodes.filter(function (el) {
-                return ((el.tagName.toLowerCase() == 'input' &&
-                  (el.type=='checkbox' || el.type=='radio') &&
-                  el.checked == checked) ||
-                (el.tagName.toLowerCase() == 'option' && el.selected == checked));
+                return ((el.tagName.toLowerCase() === 'input' &&
+                  (el.type ==='checkbox' || el.type ==='radio') &&
+                  el.checked === checked) ||
+                (el.tagName.toLowerCase() === 'option' && el.selected === checked));
             });
         },
 
@@ -159,7 +169,6 @@ var
         },
 
         isInFirstLevel: function (contextNodes, el) {
-            log('stack: isInFirstLevel');
             var i = 0,
             l = contextNodes.length;
             for ( ; i < l; i++ ) {
@@ -177,7 +186,7 @@ var
             i = 0,
             l = contextNodes.length;
             var filterf = function (child) {
-                return (child.nodeType == 1 && tagName.search(',' + child.tagName.toLowerCase() + ',') > -1);
+                return (child.nodeType === 1 && tagName.search(',' + child.tagName.toLowerCase() + ',') > -1);
             };
             for( ; i<l; i++ ){
                 var node = contextNodes[i];
@@ -204,7 +213,7 @@ var
             i = 0,
             l = contextNodes.length;
             var filterf = function (child) {
-                return (child.nodeType == 1 && $$.hasClass(child, className));
+                return (child.nodeType === 1 && $$.hasClass(child, className));
             };
             for ( ; i < l; i++ ) {
                 var node = contextNodes[i];
@@ -254,13 +263,13 @@ var
                         break;
                     }
                 }
-                else if (o == '#') {
+                else if (o === '#') {
                     //onext is id
                     if (context.length) {
                         //TODO: come up with a solution to abstract filter function away
                         var ctx = [];
                         for (var m = context.length - 1; m >= 0; m--) {
-                            if(o.id == onext){
+                            if(o.id === onext){
                                 ctx.push(context[m]);
                             }
                         }
@@ -268,8 +277,9 @@ var
                         /*context = context.filter(function (o) {
                             return o.id == onext;
                         });*/
-}
-else {
+
+                        }
+                    else {
 
                         //first rule ????????
                         var el = document.getElementById(onext);
@@ -286,7 +296,7 @@ else {
                         break;
                     }
                 }
-                else if (o == '.') {
+                else if (o === '.') {
                     //onext is className
                     if (context.length) {
                         //TODO: come up with a solution to abstract filter function away
@@ -310,8 +320,9 @@ else {
                             }
                             return (v && $$.hasClass(o, onext));
                         });*/
-}
-else {
+
+                    }
+                    else {
                         //first rule
                         context = $$.GEBCN(contextNodes, onext, firstLevel);
                     }
@@ -323,15 +334,15 @@ else {
                         break;
                     }
                 }
-                else if (o == ':') {
+                else if (o === ':') {
                     //temporary solution
                     //onext is checked or no(checked)
-                    if (onext == 'checked') {
+                    if (onext === 'checked') {
                         if (context.length) {
                             context = $$.getChecked(context, true);
                         }
                     }
-                    else if (onext == 'not(checked)') {
+                    else if (onext === 'not(checked)') {
                         if (context.length) {
                             context = $$.getChecked(context, false);
                         }
@@ -346,7 +357,7 @@ else {
                         break;
                     }
                 }
-                else if (o == '[') {
+                else if (o === '[') {
                     log('Attribute selectors are not implemented yet!');
 
                     if (context.length){
@@ -396,19 +407,21 @@ else {
                         if (j > 0) {
                             var op = selarr[j - 1];
 
-                            //all childs Selector in all dom levels (“parent child”) is implemented
-                            //Child Selector (“parent > child”) is implemented
-                            if (op == ' ' || (op == '>' && (firstLevel = true))) {
+                            //all childs Selector in all dom levels ("parent child") is implemented
+                            //Child Selector ("parent > child") is implemented
+                            if (op === ' ' || (op === '>' && (firstLevel = true))) {
                                 context = $$.processRule(s, context, firstLevel);
                             }
-                            else if (op == '+') {
+                            else if (op === '+') {
                                 log('Next Adjacent Selector is not implemented yet!');
                             }
-                            else if (op == '~') {
+                            else if (op === '~') {
                                 log('Next Siblings Selector is not implemented yet!');
                             }
                         }
-                        else context = $$.processRule(s, [document], false);
+                        else{
+                            context = $$.processRule(s, [document], false);
+                        }
 
                         if (context.length) {
                             j += 2;
