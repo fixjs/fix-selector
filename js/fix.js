@@ -227,17 +227,143 @@ var
             log('stack: GEBTN end');
             return result;
         },
+        processSubRule: function (options) {
+            var context = options.context,
+                contextNodes = options.contextNodes,
+                firstLevel = options.firstLevel,
+                k = options.k,
+                o = options.o,
+                onext = options.onext;
 
+            //check if it is star or letter only
+            if (o === '*' || /^[a-z]+[a-z0-9]+$/gi.test(o)) {
+                //first rule
+                context = $$.GEBTN(contextNodes, o, firstLevel);
+                if (context.length){
+                    options.k++;
+                }
+                else{
+                    return false;
+                }
+            }
+            else if (o === '#') {
+                //onext is id
+                if (context.length) {
+                    //TODO: come up with a solution to abstract filter function away
+                    var ctx = [];
+                    for (var m = context.length - 1; m >= 0; m--) {
+                        if(o.id === onext){
+                            ctx.push(context[m]);
+                        }
+                    }
+                    context = ctx;
+                    /*context = context.filter(function (o) {
+                        return o.id == onext;
+                    });*/
+
+                    }
+                else {
+
+                    //first rule ????????
+                    var el = document.getElementById(onext);
+
+                    if (el && $$.isInContext(contextNodes, el)){
+                        context[context.length] = el;
+                    }
+                }
+
+                if (context.length){
+                    options.k += 2;
+                }
+                else{
+                    return false;
+                }
+            }
+            else if (o === '.') {
+                //onext is className
+                if (context.length) {
+                    //TODO: come up with a solution to abstract filter function away
+                    var ctxt = [];
+                    for (var n = context.length - 1; n >= 0; n--) {
+                        var ctxtEl = context[n],
+                        v = true;
+
+                        if (firstLevel) {
+                            v = $$.isInFirstLevel(contextNodes, ctxtEl);
+                        }
+                        if(v && $$.hasClass(ctxtEl, onext)){
+                            ctxt.push(ctxtEl);
+                        }
+                    }
+                    context = ctxt;
+                    /*context = context.filter(function (o) {
+                        var v = true;
+                        if (firstLevel) {
+                            v = $$.isInFirstLevel(contextNodes, o);
+                        }
+                        return (v && $$.hasClass(o, onext));
+                    });*/
+
+                }
+                else {
+                    //first rule
+                    context = $$.GEBCN(contextNodes, onext, firstLevel);
+                }
+
+                if (context.length){
+                    options.k += 2;
+                }
+                else{
+                    return false;
+                }
+            }
+            else if (o === ':') {
+                //temporary solution
+                //onext is checked or no(checked)
+                if (onext === 'checked') {
+                    if (context.length) {
+                        context = $$.getChecked(context, true);
+                    }
+                }
+                else if (onext === 'not(checked)') {
+                    if (context.length) {
+                        context = $$.getChecked(context, false);
+                    }
+                }
+                else {
+                    log('not all Form selectors and Content Filters are implemented!');
+                }
+                if (context.length){
+                    options.k += 2;
+                }
+                else{
+                    return false;
+                }
+            }
+            else if (o === '[') {
+                log('Attribute selectors are not implemented yet!');
+
+                if (context.length){
+                    options.k += 3;
+                }
+                else{
+                    return false;
+                }
+            }
+            else {
+                return false;
+            }
+
+            return context;
+        },
         processRule: function (rule, contextNodes, firstLevel) {
-            log('stack: processRule start');
-
             rule = rule.replace(/]:/g, '] :');
 
             //TODO: take care of not operator
             //temporary solution for ':not(:checked)'
             //rule = rule.replace(/:not\(:/g, ':not\(');
 
-                var
+            var
                 arr = rule
                 .split(/([.|:|#|\/[|\/]|])+/)
                 .filter(function (val) {
@@ -248,131 +374,28 @@ var
                 k = 0,
                 l = arr.length;
 
-                while ( k < l ) {
-                    var o = arr[k],
-                    onext = arr[k + 1];
+            while ( k < l ) {
+                var o = arr[k],
+                onext = arr[k + 1];
+                var options = {
+                    context : context,
+                    contextNodes : contextNodes,
+                    firstLevel : firstLevel,
+                    k : k,
+                    o : o,
+                    onext : onext
+                };
+                var subContext = $$.processSubRule(options);
+                //(context, contextNodes, firstLevel, o, onext);
+                k = options.k;
 
-                //check if it is star or letter only
-                if (o === '*' || /^[a-z]+[a-z0-9]+$/gi.test(o)) {
-                    //first rule
-                    context = $$.GEBTN(contextNodes, o, firstLevel);
-                    if (context.length){
-                        k++;
-                    }
-                    else{
-                        break;
-                    }
+                if(subContext){
+                    context = subContext;
                 }
-                else if (o === '#') {
-                    //onext is id
-                    if (context.length) {
-                        //TODO: come up with a solution to abstract filter function away
-                        var ctx = [];
-                        for (var m = context.length - 1; m >= 0; m--) {
-                            if(o.id === onext){
-                                ctx.push(context[m]);
-                            }
-                        }
-                        context = ctx;
-                        /*context = context.filter(function (o) {
-                            return o.id == onext;
-                        });*/
-
-                        }
-                    else {
-
-                        //first rule ????????
-                        var el = document.getElementById(onext);
-
-                        if (el && $$.isInContext(contextNodes, el)){
-                            context[context.length] = el;
-                        }
-                    }
-
-                    if (context.length){
-                        k += 2;
-                    }
-                    else{
-                        break;
-                    }
-                }
-                else if (o === '.') {
-                    //onext is className
-                    if (context.length) {
-                        //TODO: come up with a solution to abstract filter function away
-                        var ctxt = [];
-                        for (var n = context.length - 1; n >= 0; n--) {
-                            var ctxtEl = context[n],
-                            v = true;
-
-                            if (firstLevel) {
-                                v = $$.isInFirstLevel(contextNodes, ctxtEl);
-                            }
-                            if(v && $$.hasClass(ctxtEl, onext)){
-                                ctxt.push(ctxtEl);
-                            }
-                        }
-                        context = ctxt;
-                        /*context = context.filter(function (o) {
-                            var v = true;
-                            if (firstLevel) {
-                                v = $$.isInFirstLevel(contextNodes, o);
-                            }
-                            return (v && $$.hasClass(o, onext));
-                        });*/
-
-                    }
-                    else {
-                        //first rule
-                        context = $$.GEBCN(contextNodes, onext, firstLevel);
-                    }
-
-                    if (context.length){
-                        k += 2;
-                    }
-                    else{
-                        break;
-                    }
-                }
-                else if (o === ':') {
-                    //temporary solution
-                    //onext is checked or no(checked)
-                    if (onext === 'checked') {
-                        if (context.length) {
-                            context = $$.getChecked(context, true);
-                        }
-                    }
-                    else if (onext === 'not(checked)') {
-                        if (context.length) {
-                            context = $$.getChecked(context, false);
-                        }
-                    }
-                    else {
-                        log('not all Form selectors and Content Filters are implemented!');
-                    }
-                    if (context.length){
-                        k += 2;
-                    }
-                    else{
-                        break;
-                    }
-                }
-                else if (o === '[') {
-                    log('Attribute selectors are not implemented yet!');
-
-                    if (context.length){
-                        k += 3;
-                    }
-                    else{
-                        break;
-                    }
-                }
-                else {
+                else{
                     break;
                 }
             }
-
-            log('stack: processRule end');
 
             return context;
         },
