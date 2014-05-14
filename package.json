@@ -14,11 +14,11 @@
     "url": "git://github.com/fixjs/fix-selector.git"
   },
   "scripts": {
-    "test": "mocha"
+    //"test": "mocha"
   },
   "dependencies": { },
   "devDependencies": {
-    "mocha": "*"
+    //"mocha": "*"
   },
   "peerDependencies": { },
   "engines": {
