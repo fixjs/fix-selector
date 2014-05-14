@@ -1,0 +1,33 @@
+{
+  "name": "fix-selector",
+  "version": "0.0.3",
+  "description": "A JavaScript CSS selector engine",
+  "keywords": [
+    "css",
+    "css-selector",
+    "javascript"
+  ],
+  "author": "Mehran Hatami",
+  "main": "js/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fixjs/fix-selector.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": { },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "peerDependencies": { },
+  "engines": {
+    "node": ">=0.10.0",
+    "npm": ">=1.2.10"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ]
+}
